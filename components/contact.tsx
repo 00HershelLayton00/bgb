@@ -25,7 +25,7 @@ export default function Contact() {
     const body = encodeURIComponent(
       `Nombre: ${form.name || "No indicado"}\nServicio: ${form.service || "No indicado"}\n\nDetalle:\n${form.details || "Sin detalles"}`
     );
-    return `mailto:contacto@bgbtech.com?subject=${subject}&body=${body}`;
+    return `mailto:bgbcuba@gmail.com?subject=${subject}&body=${body}`;
   }, [form]);
 
   function openChatbot() {
@@ -34,7 +34,7 @@ export default function Contact() {
 
   async function copyEmail() {
     try {
-      await navigator.clipboard.writeText("contacto@bgbtech.com");
+      await navigator.clipboard.writeText("bgbcuba@gmail.com");
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -64,12 +64,12 @@ export default function Contact() {
               {
                 icon: Mail,
                 title: "Correo",
-                text: "contacto@bgbtech.com"
+                text: "bgbcuba@gmail.com"
               },
               {
                 icon: PhoneCall,
-                title: "Respuesta rapida",
-                text: "El chatbot resuelve dudas basicas al instante"
+                title: "Nuestro número",
+                text: "+53 54797723"
               },
               {
                 icon: Sparkles,
