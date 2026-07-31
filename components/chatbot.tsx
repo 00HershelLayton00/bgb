@@ -2,36 +2,51 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, Send, Sparkles, X } from "lucide-react";
-import { getBotReply } from "@/lib/chatbot";
+import { Bot, Copy, Send, Sparkles, X } from "lucide-react";
+import { getFaqReply, getQuickPrompts, isFaqQuestion } from "@/lib/faq";
+
+type Role = "user" | "assistant";
 
 type Message = {
-  id: number;
-  role: "user" | "bot";
+  id: string;
+  role: Role;
   text: string;
+  kind?: "faq" | "ai" | "system";
 };
 
-const STORAGE_KEY = "bgb-tech-chatbot-usage-v1";
-const LIMIT_PER_HOUR = 20;
+type ApiResult =
+  | { mode: "faq" | "ai"; reply: string; remaining: number }
+  | { mode: "limit"; reply: string; remaining: number; resetAt: number }
+  | { mode: "error"; reply: string; remaining: number };
 
-function loadUsage() {
+const STORAGE_KEY = "bgb-tech-chat-history-v2";
+
+function createId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function openChatbot() {
+  window.dispatchEvent(new Event("bgb-open-chatbot"));
+}
+
+function loadHistory(): Message[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((value) => typeof value === "number") : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
 }
 
-function saveUsage(values: number[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+function saveHistory(messages: Message[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-20)));
 }
 
-function openChatbot() {
-  window.dispatchEvent(new Event("bgb-open-chatbot"));
+function isClientFaq(text: string) {
+  return isFaqQuestion(text) || getFaqReply(text) !== null;
 }
 
 export default function Chatbot() {
@@ -39,95 +54,127 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 1,
-      role: "bot",
-      text: "Hola, soy el asistente de BGB Tech. Preguntame por servicios, precios o contacto."
+      id: "welcome",
+      role: "assistant",
+      kind: "system",
+      text: "Hola, soy Nova, el asistente de BGB Tech. Puedo responder dudas rapidas o consultar IA cuando haga falta."
     }
   ]);
   const [typing, setTyping] = useState(false);
-  const [usage, setUsage] = useState<number[]>([]);
+  const [aiRemaining, setAiRemaining] = useState(10);
+  const [resetAt, setResetAt] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const timersRef = useRef<number[]>([]);
 
   useEffect(() => {
-    setUsage(loadUsage());
+    const saved = loadHistory();
+    if (saved.length > 0) setMessages(saved);
 
     const handleOpen = () => setOpen(true);
     window.addEventListener("bgb-open-chatbot", handleOpen);
-
     return () => window.removeEventListener("bgb-open-chatbot", handleOpen);
   }, []);
 
   useEffect(() => {
+    saveHistory(messages);
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typing, open]);
+  }, [messages, typing]);
 
-  useEffect(() => {
-    return () => {
-      timersRef.current.forEach((timer) => window.clearTimeout(timer));
-    };
-  }, []);
+  const quickPrompts = useMemo(() => getQuickPrompts(), []);
 
-  const recentUsage = useMemo(() => {
-    const now = Date.now();
-    const hourAgo = now - 60 * 60 * 1000;
-    return usage.filter((timestamp) => timestamp >= hourAgo);
-  }, [usage]);
-
-  const remaining = Math.max(0, LIMIT_PER_HOUR - recentUsage.length);
-  const blocked = remaining === 0;
-
-  function registerQuestion() {
-    const now = Date.now();
-    const hourAgo = now - 60 * 60 * 1000;
-    const freshUsage = [...recentUsage.filter((timestamp) => timestamp >= hourAgo), now];
-    setUsage(freshUsage);
-    saveUsage(freshUsage);
-  }
-
-  function sendMessage(text?: string) {
-    const value = (text ?? input).trim();
-    if (!value || typing || blocked) return;
+  async function sendMessage(rawText?: string) {
+    const text = (rawText ?? input).trim();
+    if (!text || typing) return;
 
     const userMessage: Message = {
-      id: Date.now(),
+      id: createId(),
       role: "user",
-      text: value
+      text
     };
 
     setMessages((current) => [...current, userMessage]);
     setInput("");
-    registerQuestion();
     setTyping(true);
 
-    const timer = window.setTimeout(() => {
-      const reply: Message = {
-        id: Date.now() + 1,
-        role: "bot",
-        text: getBotReply(value)
+    if (isClientFaq(text)) {
+      const localReply = getFaqReply(text) ?? "Puedo ayudarte con servicios, contacto o presupuesto.";
+      const assistantMessage: Message = {
+        id: createId(),
+        role: "assistant",
+        kind: "faq",
+        text: localReply
       };
-      setMessages((current) => [...current, reply]);
+      setMessages((current) => [...current, assistantMessage]);
       setTyping(false);
-    }, 750);
+      return;
+    }
 
-    timersRef.current.push(timer);
+    try {
+      const history = [...messages, userMessage]
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .slice(-12)
+        .map((m) => ({ role: m.role, content: m.text }));
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: text,
+          history
+        })
+      });
+
+      const data = (await response.json()) as ApiResult;
+
+      if ("remaining" in data && typeof data.remaining === "number") {
+        setAiRemaining(data.remaining);
+      }
+
+      if ("resetAt" in data && typeof data.resetAt === "number") {
+        setResetAt(data.resetAt);
+      } else if (response.ok) {
+        setResetAt(null);
+      }
+
+      const assistantMessage: Message = {
+        id: createId(),
+        role: "assistant",
+        kind: data.mode === "ai" ? "ai" : data.mode === "faq" ? "faq" : "system",
+        text: data.reply
+      };
+
+      setMessages((current) => [...current, assistantMessage]);
+    } catch {
+      setMessages((current) => [
+        ...current,
+        {
+          id: createId(),
+          role: "assistant",
+          kind: "system",
+          text: "No pude conectar con la IA en este momento. Intenta otra vez."
+        }
+      ]);
+    } finally {
+      setTyping(false);
+    }
   }
 
-  const quickPrompts = [
-    "Que servicios ofrecen?",
-    "Hacen apps Android?",
-    "Pueden ayudar con WhatsApp e Instagram?",
-    "Como contacto a BGB?"
-  ];
+  const formatReset = () => {
+    if (!resetAt) return null;
+    const diff = Math.max(0, resetAt - Date.now());
+    const mins = Math.ceil(diff / 60000);
+    return mins <= 1 ? "1 min" : `${mins} min`;
+  };
 
   return (
     <>
       <motion.button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        whileHover={{ scale: 1.03 }}
+        whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.98 }}
-        className="fixed right-4 bottom-24 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#0066FF] text-white shadow-[0_0_40px_rgba(0,102,255,0.4)] sm:right-6 sm:bottom-28"
+        className="fixed right-4 bottom-24 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#0066FF] text-white shadow-[0_0_40px_rgba(0,102,255,0.42)] sm:right-6 sm:bottom-28"
         aria-label="Abrir chatbot"
       >
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/20">
@@ -138,11 +185,11 @@ export default function Chatbot() {
       <AnimatePresence>
         {open ? (
           <motion.div
-            initial={{ opacity: 0, y: 22, scale: 0.96 }}
+            initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 22, scale: 0.96 }}
-            transition={{ duration: 0.25 }}
-            className="fixed right-4 bottom-40 z-50 w-[min(92vw,24rem)] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#07090e]/90 shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:right-6 sm:bottom-44"
+            exit={{ opacity: 0, y: 20, scale: 0.97 }}
+            transition={{ duration: 0.24 }}
+            className="fixed right-4 bottom-40 z-50 w-[min(92vw,25rem)] overflow-hidden rounded-[1.9rem] border border-white/10 bg-[#07090e]/94 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:right-6 sm:bottom-44"
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
               <div className="flex items-center gap-3">
@@ -150,9 +197,11 @@ export default function Chatbot() {
                   BGB
                 </div>
                 <div>
-                  <p className="font-semibold text-white">BGB Assistant</p>
-                  <p className="text-xs text-white/100">
-                    {blocked ? "Limite alcanzado por ahora" : `${remaining} preguntas disponibles esta hora`}
+                  <p className="font-semibold text-white">Nova · Asistente IA</p>
+                  <p className="text-xs text-white/70">
+                    {aiRemaining > 0 ? `${aiRemaining}/10 consultas IA disponibles` : `Límite alcanzado${
+                      formatReset() ? ` · vuelve en ${formatReset()}` : ""
+                    }`}
                   </p>
                 </div>
               </div>
@@ -160,24 +209,26 @@ export default function Chatbot() {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full border border-white/10 bg-white/10 p-2 text-white/100 transition hover:bg-white/10 hover:text-white"
+                className="rounded-full border border-white/10 bg-white/10 p-2 text-white/80 transition hover:bg-white/15 hover:text-white"
                 aria-label="Cerrar chatbot"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="max-h-[26rem] space-y-4 overflow-y-auto px-4 py-4">
+            <div className="max-h-[28rem] space-y-4 overflow-y-auto px-4 py-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[84%] rounded-2xl px-4 py-3 text-sm leading-6 ${
+                    className={`max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 ${
                       message.role === "user"
                         ? "bg-[#0066FF] text-white"
-                        : "bg-white/10 text-white/90"
+                        : message.kind === "faq"
+                          ? "bg-white/10 text-white/90"
+                          : "bg-white/8 text-white/90"
                     }`}
                   >
                     {message.text}
@@ -205,8 +256,7 @@ export default function Chatbot() {
                     key={prompt}
                     type="button"
                     onClick={() => sendMessage(prompt)}
-                    className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs text-white/100 transition hover:bg-white/10 hover:text-white"
-                    disabled={blocked}
+                    className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs text-white/80 transition hover:bg-white/15 hover:text-white"
                   >
                     {prompt}
                   </button>
@@ -220,20 +270,19 @@ export default function Chatbot() {
                 }}
                 className="flex items-center gap-2"
               >
-                <div className="flex flex-1 items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-2">
+                <div className="flex flex-1 items-center gap-2 rounded-full border border-white/10 bg-black/35 px-3 py-2">
                   <Sparkles className="h-4 w-4 shrink-0 text-[#86b5ff]" />
                   <input
                     value={input}
                     onChange={(event) => setInput(event.target.value)}
-                    placeholder={blocked ? "Limite temporal alcanzado" : "Escribe tu pregunta..."}
-                    className="w-full bg-transparent text-sm outline-none placeholder:text-white/30 disabled:cursor-not-allowed"
-                    disabled={blocked}
+                    placeholder={aiRemaining > 0 ? "Escribe tu pregunta..." : "Usa las preguntas rapidas"}
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-white/35"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={!input.trim() || blocked}
+                  disabled={!input.trim() || typing}
                   className="rounded-full bg-[#0066FF] p-3 text-white transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-45"
                   aria-label="Enviar mensaje"
                 >
@@ -244,8 +293,9 @@ export default function Chatbot() {
               <button
                 type="button"
                 onClick={openChatbot}
-                className="mt-3 text-xs text-white/50 transition hover:text-white/100"
+                className="mt-3 flex items-center gap-2 text-xs text-white/55 transition hover:text-white/90"
               >
+                <Copy className="h-3.5 w-3.5" />
                 Abrir chatbot desde la pagina
               </button>
             </div>
