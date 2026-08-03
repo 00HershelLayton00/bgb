@@ -23,7 +23,7 @@ export default function Navbar() {
     >
       <div className="glass mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 rounded-3xl px-5 py-4">
         <a href="#" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0066FF] text-lg font-black shadow-[0_0_40px_rgba(0,102,255,0.45)]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0066FF] text-lg font-black shadow-[0_0_30px_rgba(0,102,255,0.32)]">
             BGB
           </div>
           <div>
@@ -47,7 +47,7 @@ export default function Navbar() {
         <button
           type="button"
           onClick={openChatbot}
-          className="inline-flex items-center gap-2 rounded-full bg-[#0066FF] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_35px_rgba(0,102,255,0.38)] transition hover:scale-[1.02] hover:bg-[#0a73ff]"
+          className="inline-flex items-center gap-2 rounded-full bg-[#0066FF] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_25px_rgba(0,102,255,0.3)] transition hover:scale-[1.02] hover:bg-[#0a73ff]"
         >
           <Sparkles className="h-4 w-4" />
           Hablar ahora

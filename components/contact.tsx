@@ -3,6 +3,7 @@
 import { type FormEvent, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, MessageCircle, PhoneCall, Send, Sparkles } from "lucide-react";
+import { business, whatsappLink } from "@/lib/faq";
 
 type FormState = {
   name: string;
@@ -21,12 +22,20 @@ export default function Contact() {
   const [copied, setCopied] = useState(false);
 
   const mailtoLink = useMemo(() => {
-    const subject = encodeURIComponent(`Nuevo proyecto BGB Tech: ${form.service || "Consulta general"}`);
+    const subject = encodeURIComponent(`Nuevo proyecto ${business.name}: ${form.service || "Consulta general"}`);
     const body = encodeURIComponent(
       `Nombre: ${form.name || "No indicado"}\nServicio: ${form.service || "No indicado"}\n\nDetalle:\n${form.details || "Sin detalles"}`
     );
-    return `mailto:bgbcuba@gmail.com?subject=${subject}&body=${body}`;
+    return `mailto:${business.email}?subject=${subject}&body=${body}`;
   }, [form]);
+
+  const waLink = useMemo(
+    () =>
+      whatsappLink(
+        `Hola ${business.name}, te escribo desde la web.\nServicio: ${form.service || "Consulta general"}\n\nDetalle:\n${form.details || "Sin detalles"}`
+      ),
+    [form]
+  );
 
   function openChatbot() {
     window.dispatchEvent(new Event("bgb-open-chatbot"));
@@ -34,7 +43,7 @@ export default function Contact() {
 
   async function copyEmail() {
     try {
-      await navigator.clipboard.writeText("bgbcuba@gmail.com");
+      await navigator.clipboard.writeText(business.email);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
@@ -64,12 +73,14 @@ export default function Contact() {
               {
                 icon: Mail,
                 title: "Correo",
-                text: "bgbcuba@gmail.com"
+                text: business.email,
+                href: `mailto:${business.email}`
               },
               {
                 icon: PhoneCall,
-                title: "Nuestro número",
-                text: "+53 54797723"
+                title: "WhatsApp",
+                text: business.whatsapp.display,
+                href: whatsappLink(business.whatsapp.intro)
               },
               {
                 icon: Sparkles,
@@ -78,8 +89,8 @@ export default function Contact() {
               }
             ].map((item) => {
               const Icon = item.icon;
-              return (
-                <div key={item.title} className="glass flex items-start gap-4 rounded-[1.5rem] p-5">
+              const content = (
+                <>
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0066FF]/20 text-[#9ec1ff]">
                     <Icon className="h-5 w-5" />
                   </div>
@@ -87,6 +98,21 @@ export default function Contact() {
                     <h3 className="font-semibold">{item.title}</h3>
                     <p className="mt-1 text-sm text-white/100">{item.text}</p>
                   </div>
+                </>
+              );
+              return item.href ? (
+                <a
+                  key={item.title}
+                  href={item.href}
+                  target={item.href.startsWith("http") ? "_blank" : undefined}
+                  rel="noreferrer"
+                  className="glass flex items-start gap-4 rounded-[1.5rem] p-5 transition hover:border-[#0066FF]/40"
+                >
+                  {content}
+                </a>
+              ) : (
+                <div key={item.title} className="glass flex items-start gap-4 rounded-[1.5rem] p-5">
+                  {content}
                 </div>
               );
             })}
@@ -153,8 +179,17 @@ export default function Contact() {
               className="inline-flex items-center gap-2 rounded-full bg-[#0066FF] px-5 py-3 font-semibold text-white shadow-[0_0_35px_rgba(0,102,255,0.35)] transition hover:scale-[1.02]"
             >
               <Send className="h-4 w-4" />
-              Abrir correo
+              Enviar por correo
             </button>
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-3 font-semibold text-[#04210f] transition hover:scale-[1.02]"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Enviar por WhatsApp
+            </a>
             <button
               type="button"
               onClick={copyEmail}

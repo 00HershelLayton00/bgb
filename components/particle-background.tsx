@@ -38,13 +38,13 @@ export default function ParticleBackground() {
       canvas.style.height = `${height}px`;
       ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
 
-      const count = Math.max(42, Math.min(120, Math.floor((width * height) / 18000)));
+      const count = Math.max(30, Math.min(90, Math.floor((width * height) / 24000)));
       particles = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.22,
-        vy: (Math.random() - 0.5) * 0.22,
-        r: 1 + Math.random() * 1.8
+        vx: (Math.random() - 0.5) * 0.16,
+        vy: (Math.random() - 0.5) * 0.16,
+        r: 0.8 + Math.random() * 1.4
       }));
     };
 
@@ -61,7 +61,7 @@ export default function ParticleBackground() {
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
 
-      ctx.fillStyle = "rgba(4, 6, 12, 0.12)";
+      ctx.fillStyle = "rgba(4, 6, 12, 0.1)";
       ctx.fillRect(0, 0, width, height);
 
       for (let i = 0; i < particles.length; i++) {
@@ -80,7 +80,7 @@ export default function ParticleBackground() {
         const dx = particle.x - pointerX;
         const dy = particle.y - pointerY;
         const pointerDistance = Math.sqrt(dx * dx + dy * dy);
-        const pointerGlow = pointerDistance < 180 ? 1 - pointerDistance / 180 : 0;
+        const pointerGlow = pointerDistance < 160 ? 1 - pointerDistance / 160 : 0;
 
         for (let j = i + 1; j < particles.length; j++) {
           const other = particles[j];
@@ -88,9 +88,9 @@ export default function ParticleBackground() {
           const oy = particle.y - other.y;
           const dist = Math.sqrt(ox * ox + oy * oy);
 
-          if (dist < 110) {
-            ctx.strokeStyle = `rgba(0, 140, 255, ${0.22 * (1 - dist / 110)})`;
-            ctx.lineWidth = 1.1;
+          if (dist < 100) {
+            ctx.strokeStyle = `rgba(0, 130, 255, ${0.13 * (1 - dist / 100)})`;
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(other.x, other.y);
@@ -99,8 +99,8 @@ export default function ParticleBackground() {
         }
 
         if (pointerGlow > 0) {
-          ctx.strokeStyle = `rgba(0, 150, 255, ${0.38 * pointerGlow})`;
-          ctx.lineWidth = 1.35;
+          ctx.strokeStyle = `rgba(0, 140, 255, ${0.2 * pointerGlow})`;
+          ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.moveTo(particle.x, particle.y);
           ctx.lineTo(pointerX, pointerY);
@@ -108,14 +108,14 @@ export default function ParticleBackground() {
         }
 
         const gradient = ctx.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, 12);
-        gradient.addColorStop(0, `rgba(95, 160, 255, ${0.86 + pointerGlow * 0.12})`);
+        gradient.addColorStop(0, `rgba(95, 160, 255, ${0.6 + pointerGlow * 0.1})`);
         gradient.addColorStop(1, "rgba(120, 180, 255, 0)");
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, 9 + pointerGlow * 2, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, 8 + pointerGlow * 2, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = "rgba(230,240,255,0.78)";
+        ctx.fillStyle = "rgba(220, 235, 255, 0.55)";
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.r, 0, Math.PI * 2);
         ctx.fill();
@@ -139,5 +139,5 @@ export default function ParticleBackground() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0 opacity-80" />;
+  return <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0 opacity-45" />;
 }

@@ -10,13 +10,13 @@ function openChatbot() {
 const stats = [
   { value: "8", label: "Servicios claros" },
   { value: "100%", label: "Responsive" },
-  { value: "20/h", label: "Chatbot limitado" }
+  { value: "24/7", label: "Asistente Nova" }
 ];
 
 export default function Hero() {
   return (
     <section className="relative mx-auto flex min-h-screen max-w-7xl items-center px-4 pt-32 pb-20 sm:px-6 lg:px-8">
-      <div className="absolute inset-x-0 top-20 -z-10 mx-auto h-72 w-72 rounded-full bg-[#0066FF] opacity-20 blur-3xl" />
+      <div className="absolute inset-x-0 top-20 -z-10 mx-auto h-72 w-72 rounded-full bg-[#0066FF] opacity-[0.12] blur-3xl" />
       <div className="grid w-full items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="max-w-3xl">
           <motion.div
@@ -92,7 +92,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.08 }}
           className="relative"
         >
-          <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-[#0066FF] opacity-20 blur-3xl" />
+          <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-[#0066FF] opacity-14 blur-3xl" />
           <div className="glass relative overflow-hidden rounded-[2rem] p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -116,7 +116,7 @@ export default function Hero() {
                 },
                 {
                   title: "Chat inteligente",
-                  text: "Responde preguntas basicas sin usar una API real."
+                  text: "Responde dudas al instante y te guía hacia la mejor solución."
                 },
                 {
                   title: "Escalable",

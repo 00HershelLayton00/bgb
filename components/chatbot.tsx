@@ -2,8 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, Copy, Send, Sparkles, X } from "lucide-react";
-import { getFaqReply, getQuickPrompts, isFaqQuestion } from "@/lib/faq";
+import { Bot, MessageCircle, Send, Sparkles, X } from "lucide-react";
+import {
+  business,
+  getFaqReply,
+  getFaqText,
+  getQuickPrompts,
+  isFaqQuestion,
+  whatsappLink
+} from "@/lib/faq";
 
 type Role = "user" | "assistant";
 
@@ -12,6 +19,7 @@ type Message = {
   role: Role;
   text: string;
   kind?: "faq" | "ai" | "system";
+  image?: string | null;
 };
 
 type ApiResult =
@@ -23,10 +31,6 @@ const STORAGE_KEY = "bgb-tech-chat-history-v2";
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function openChatbot() {
-  window.dispatchEvent(new Event("bgb-open-chatbot"));
 }
 
 function loadHistory(): Message[] {
@@ -57,11 +61,12 @@ export default function Chatbot() {
       id: "welcome",
       role: "assistant",
       kind: "system",
-      text: "Hola, soy Nova, el asistente de BGB Tech. Puedo responder dudas rapidas o consultar IA cuando haga falta."
+      image: null,
+      text: `Hola, soy ${business.chatbotName}, el asistente de ${business.name}. Puedo resolver dudas de servicios, precios, tiempos o dejarte el contacto directo por WhatsApp y correo.`
     }
   ]);
   const [typing, setTyping] = useState(false);
-  const [aiRemaining, setAiRemaining] = useState(10);
+  const [aiRemaining, setAiRemaining] = useState(business.aiLimitPerHour);
   const [resetAt, setResetAt] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -96,12 +101,13 @@ export default function Chatbot() {
     setTyping(true);
 
     if (isClientFaq(text)) {
-      const localReply = getFaqReply(text) ?? "Puedo ayudarte con servicios, contacto o presupuesto.";
+      const localReply = getFaqReply(text) ?? { text: getFaqText(text) };
       const assistantMessage: Message = {
         id: createId(),
         role: "assistant",
         kind: "faq",
-        text: localReply
+        text: localReply.text,
+        image: localReply.image ?? null
       };
       setMessages((current) => [...current, assistantMessage]);
       setTyping(false);
@@ -141,7 +147,8 @@ export default function Chatbot() {
         id: createId(),
         role: "assistant",
         kind: data.mode === "ai" ? "ai" : data.mode === "faq" ? "faq" : "system",
-        text: data.reply
+        text: data.reply,
+        image: null
       };
 
       setMessages((current) => [...current, assistantMessage]);
@@ -174,7 +181,7 @@ export default function Chatbot() {
         onClick={() => setOpen((value) => !value)}
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.98 }}
-        className="fixed right-4 bottom-24 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#0066FF] text-white shadow-[0_0_40px_rgba(0,102,255,0.42)] sm:right-6 sm:bottom-28"
+        className="fixed right-4 bottom-24 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#0066FF] text-white shadow-[0_0_30px_rgba(0,102,255,0.3)] sm:right-6 sm:bottom-28"
         aria-label="Abrir chatbot"
       >
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/20">
@@ -197,9 +204,9 @@ export default function Chatbot() {
                   BGB
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Nova · Asistente IA</p>
+                  <p className="font-semibold text-white">{business.chatbotName} · Asistente IA</p>
                   <p className="text-xs text-white/70">
-                    {aiRemaining > 0 ? `${aiRemaining}/10 consultas IA disponibles` : `Límite alcanzado${
+                    {aiRemaining > 0 ? `${aiRemaining}/${business.aiLimitPerHour} consultas IA disponibles` : `Límite alcanzado${
                       formatReset() ? ` · vuelve en ${formatReset()}` : ""
                     }`}
                   </p>
@@ -223,7 +230,7 @@ export default function Chatbot() {
                   className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 ${
+                    className={`max-w-[86%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-6 ${
                       message.role === "user"
                         ? "bg-[#0066FF] text-white"
                         : message.kind === "faq"
@@ -231,6 +238,13 @@ export default function Chatbot() {
                           : "bg-white/8 text-white/90"
                     }`}
                   >
+                    {message.image ? (
+                      <img
+                        src={message.image}
+                        alt=""
+                        className="mb-2 max-h-40 w-full rounded-xl object-cover"
+                      />
+                    ) : null}
                     {message.text}
                   </div>
                 </div>
@@ -290,14 +304,15 @@ export default function Chatbot() {
                 </button>
               </form>
 
-              <button
-                type="button"
-                onClick={openChatbot}
-                className="mt-3 flex items-center gap-2 text-xs text-white/55 transition hover:text-white/90"
+              <a
+                href={whatsappLink(business.whatsapp.intro)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs text-white/80 transition hover:bg-white/15 hover:text-white"
               >
-                <Copy className="h-3.5 w-3.5" />
-                Abrir chatbot desde la pagina
-              </button>
+                <MessageCircle className="h-3.5 w-3.5" />
+                Contactar por WhatsApp · {business.whatsapp.display}
+              </a>
             </div>
           </motion.div>
         ) : null}

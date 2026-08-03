@@ -1,9 +1,9 @@
 import Groq from "groq-sdk";
 import { NextResponse } from "next/server";
-import { getFaqReply, isFaqQuestion } from "@/lib/faq";
+import { business, getFaqReply, getFaqText } from "@/lib/faq";
 
 const COOKIE_NAME = "bgb-ai-usage-v1";
-const MAX_AI_PER_HOUR = 10;
+const MAX_AI_PER_HOUR = business.aiLimitPerHour;
 const MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
 const groq = new Groq({
@@ -39,11 +39,13 @@ function freshUsage(timestamps: number[]) {
 
 function systemPrompt() {
   return [
-    "Eres Nova, el asistente virtual oficial de BGB Tech.",
+    `Eres ${business.chatbotName}, el asistente virtual oficial de ${business.name}.`,
     "Tu objetivo es ayudar a convertir visitantes en clientes.",
     "Habla en espanol claro, profesional y facil de entender.",
     "Explica tecnologia sin tecnicismos innecesarios.",
     "No inventes precios ni tiempos exactos si no se han dado.",
+    `Contactos oficiales: correo ${business.email} y WhatsApp ${business.whatsapp.display} (${business.whatsapp.link}).`,
+    "Cuando el visitante quiera avanzar, comparte el correo y el WhatsApp y sugiere usar el formulario de la seccion de contacto.",
     "Si faltan datos, pide la informacion justa o invita a contactar al equipo.",
     "Servicios de BGB Tech: desarrollo de apps Android, paginas web, software de escritorio, IA para WhatsApp e Instagram, instalacion de sistemas operativos y soporte tecnico.",
     "Cuando convenga, guia al usuario hacia la mejor solucion para su negocio."
@@ -68,16 +70,7 @@ export async function POST(req: Request) {
     if (faqReply) {
       return NextResponse.json({
         mode: "faq",
-        reply: faqReply,
-        remaining: MAX_AI_PER_HOUR
-      });
-    }
-
-    if (isFaqQuestion(message)) {
-      return NextResponse.json({
-        mode: "faq",
-        reply:
-          "BGB Tech ofrece desarrollo de apps Android, sitios web, software de escritorio, IA para WhatsApp e Instagram, instalacion de sistemas operativos y soporte tecnico.",
+        reply: faqReply.text,
         remaining: MAX_AI_PER_HOUR
       });
     }
@@ -89,8 +82,7 @@ export async function POST(req: Request) {
       const response = NextResponse.json(
         {
           mode: "limit",
-          reply:
-            "Ya alcanzaste el limite de 10 consultas con IA por hora. Puedes seguir usando las respuestas rapidas sin costo.",
+          reply: `Ya alcanzaste el limite de ${MAX_AI_PER_HOUR} consultas con IA por hora. Puedes seguir usando las respuestas rapidas sin costo.`,
           remaining: 0,
           resetAt: Date.now() + 60 * 60 * 1000
         },
@@ -124,7 +116,7 @@ export async function POST(req: Request) {
       ]
     });
 
-    const reply = completion.choices[0]?.message?.content?.trim() || "No pude generar una respuesta en este momento.";
+    const reply = completion.choices[0]?.message?.content?.trim() || getFaqText(message);
 
     const updatedUsage = [...current, Date.now()];
     const response = NextResponse.json({
