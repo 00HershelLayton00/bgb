@@ -1,57 +1,41 @@
-"use client";
+import fs from "fs";
+import path from "path";
+import TeamCarousel from "@/components/team-carousel";
 
-import { motion } from "framer-motion";
+const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]);
 
-const team = [
-  {
-    initials: "E",
-    title: "Estrategia",
-    text: "Convertimos ideas en una propuesta clara, elegante y facil de explicar."
-  },
-  {
-    initials: "D",
-    title: "Desarrollo",
-    text: "Construimos la parte visual y tecnica con una base limpia y moderna."
-  },
-  {
-    initials: "S",
-    title: "Soporte",
-    text: "Acompañamos despues de la entrega para que todo siga funcionando bien."
-  }
-];
+function listTeamPhotos(): string[] {
+  const dir = path.join(process.cwd(), "public");
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((file) => IMAGE_EXTENSIONS.has(path.extname(file).toLowerCase()))
+    .sort((a, b) => {
+      const na = Number.parseInt(a.match(/\d+/)?.[0] ?? "", 10);
+      const nb = Number.parseInt(b.match(/\d+/)?.[0] ?? "", 10);
+      if (Number.isFinite(na) && Number.isFinite(nb) && na !== nb) return na - nb;
+      return a.localeCompare(b);
+    })
+    .map((file) => `/${file}`);
+}
 
 export default function Team() {
+  const photos = listTeamPhotos();
+
   return (
-    <section id="equipo" className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-      <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+    <section id="equipo" className="mx-auto max-w-7xl px-4 pt-12 pb-24 sm:px-6 lg:px-8">
+      <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#7fb2ff]">Equipo</p>
-          <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
-            Un equipo pequeño, rapido y enfocado en resultados que se notan.
+          <h2 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+            Un equipo pequeño, rapido y enfocado en resultados.
           </h2>
-          <p className="mt-4 max-w-xl text-white/100">
+          <p className="mt-4 max-w-xl text-white/80">
             Ideal para clientes que quieren una imagen seria sin complicarse con detalles tecnicos.
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
-          {team.map((member, index) => (
-            <motion.article
-              key={member.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
-              transition={{ duration: 0.45, delay: index * 0.06 }}
-              className="glass rounded-[1.75rem] p-6 text-center"
-            >
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0066FF] text-2xl font-black shadow-[0_0_35px_rgba(0,102,255,0.34)]">
-                {member.initials}
-              </div>
-              <h3 className="mt-5 text-lg font-bold">{member.title}</h3>
-              <p className="mt-3 text-sm leading-6 text-white/100">{member.text}</p>
-            </motion.article>
-          ))}
-        </div>
+        <TeamCarousel photos={photos} />
       </div>
     </section>
   );

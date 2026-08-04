@@ -6,9 +6,12 @@ const COOKIE_NAME = "bgb-ai-usage-v1";
 const MAX_AI_PER_HOUR = business.aiLimitPerHour;
 const MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
+const groq = getGroqClient();
+
+function getGroqClient() {
+  if (!process.env.GROQ_API_KEY) return null;
+  return new Groq({ apiKey: process.env.GROQ_API_KEY });
+}
 
 type UsageCookie = {
   timestamps: number[];
@@ -47,7 +50,7 @@ function systemPrompt() {
     `Contactos oficiales: correo ${business.email} y WhatsApp ${business.whatsapp.display} (${business.whatsapp.link}).`,
     "Cuando el visitante quiera avanzar, comparte el correo y el WhatsApp y sugiere usar el formulario de la seccion de contacto.",
     "Si faltan datos, pide la informacion justa o invita a contactar al equipo.",
-    "Servicios de BGB Tech: desarrollo de apps Android, paginas web, software de escritorio, IA para WhatsApp e Instagram, instalacion de sistemas operativos y soporte tecnico.",
+    "Servicios de BGB Tech: desarrollo de apps Android, paginas web, instalacion y desarrollo de softwares de escritorio, IA para WhatsApp e Instagram, instalacion de sistemas operativos y soporte tecnico.",
     "Cuando convenga, guia al usuario hacia la mejor solucion para su negocio."
   ].join(" ");
 }
@@ -77,6 +80,23 @@ export async function POST(req: Request) {
 
     const usage = parseUsageCookie(req.headers.get("cookie")?.match(/(?:^|;\s*)bgb-ai-usage-v1=([^;]+)/)?.[1]);
     const current = freshUsage(usage.timestamps);
+
+    if (!groq) {
+      const response = NextResponse.json({
+        mode: "limit",
+        reply:
+          "Por ahora respondo las preguntas rapidas de la pagina. Escribenos por WhatsApp y te atendemos directo.",
+        remaining: 0,
+        resetAt: Date.now() + 60 * 60 * 1000
+      });
+      response.cookies.set(COOKIE_NAME, serializeUsageCookie({ timestamps: current }), {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 30
+      });
+      return response;
+    }
 
     if (current.length >= MAX_AI_PER_HOUR) {
       const response = NextResponse.json(

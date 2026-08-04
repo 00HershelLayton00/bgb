@@ -21,15 +21,12 @@ export default function Navbar() {
       transition={{ duration: 0.55 }}
       className="fixed inset-x-0 top-0 z-40 px-4 pt-4 sm:px-6 lg:px-8"
     >
-      <div className="glass mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 rounded-3xl px-5 py-4">
-        <a href="#" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0066FF] text-lg font-black shadow-[0_0_30px_rgba(0,102,255,0.32)]">
+      <div className="glass mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-3xl px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
+        <a href="#" className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0066FF] text-base font-black shadow-[0_0_30px_rgba(0,102,255,0.32)] sm:h-11 sm:w-11 sm:text-lg">
             BGB
           </div>
-          <div>
-            <p className="text-sm font-semibold tracking-[0.35em] text-white/100">BGB TECH</p>
-            <p className="text-xs text-white/100">Tecnologia premium</p>
-          </div>
+          <p className="font-display text-xs font-semibold tracking-[0.3em] text-white/100 sm:text-sm sm:tracking-[0.35em]">BGB TECH</p>
         </a>
 
         <nav className="flex flex-wrap items-center gap-3 text-sm text-white/100">
@@ -47,11 +44,11 @@ export default function Navbar() {
         <button
           type="button"
           onClick={openChatbot}
-          className="inline-flex items-center gap-2 rounded-full bg-[#0066FF] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_25px_rgba(0,102,255,0.3)] transition hover:scale-[1.02] hover:bg-[#0a73ff]"
+          className="inline-flex items-center gap-2 rounded-full bg-[#0066FF] px-4 py-2 text-xs font-semibold text-white shadow-[0_0_25px_rgba(0,102,255,0.3)] transition hover:scale-[1.02] hover:bg-[#0a73ff] sm:px-5 sm:py-2.5 sm:text-sm"
         >
-          <Sparkles className="h-4 w-4" />
+          <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Hablar ahora
-          <ArrowRight className="h-4 w-4" />
+          <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </button>
       </div>
     </motion.header>

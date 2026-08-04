@@ -14,7 +14,7 @@ export const business = {
 export const services = [
   "APKs y apps Android",
   "Páginas web",
-  "Software de escritorio",
+  "Instalación y desarrollo de softwares de escritorio",
   "IA para WhatsApp",
   "IA para Instagram",
   "Instalación de sistemas",
@@ -64,7 +64,7 @@ const FAQ_MAP: FaqRule[] = [
     test: /escritorio|desktop|windows|linux|software/i,
     reply: {
       image: null,
-      text: "También creamos software de escritorio para procesos internos, control, gestión y automatización. Herramientas claras y enfocadas en tareas reales de trabajo."
+      text: "También hacemos instalación y desarrollo de softwares de escritorio para procesos internos, control, gestión y automatización. Herramientas claras y enfocadas en tareas reales de trabajo."
     }
   },
   {

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BGB Tech | Tecnologia premium para negocios",
+  title: "Tecnología premium | BGB Tech",
   description:
-    "Landing page premium para BGB Tech con servicios de apps, web, software, IA en WhatsApp e Instagram, instalacion de sistemas y soporte tecnico."
+    "Apps Android, páginas web, software de escritorio, IA para WhatsApp e Instagram, instalación de sistemas y soporte técnico. Haz que tu negocio se vea serio, moderno y listo para vender más."
 };
 
 export default function RootLayout({

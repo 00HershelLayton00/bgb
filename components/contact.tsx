@@ -2,7 +2,7 @@
 
 import { type FormEvent, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MessageCircle, PhoneCall, Send, Sparkles } from "lucide-react";
+import { Facebook, Mail, MessageCircle, PhoneCall, Send } from "lucide-react";
 import { business, whatsappLink } from "@/lib/faq";
 
 type FormState = {
@@ -61,7 +61,7 @@ export default function Contact() {
       <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.4em] text-[#7fb2ff]">Contacto</p>
-          <h2 className="mt-4 text-3xl font-black tracking-tight sm:text-4xl">
+          <h2 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-4xl">
             Cuentanos tu idea y la convertimos en una propuesta elegante.
           </h2>
           <p className="mt-4 max-w-xl text-white/100">
@@ -83,9 +83,10 @@ export default function Contact() {
                 href: whatsappLink(business.whatsapp.intro)
               },
               {
-                icon: Sparkles,
-                title: "Enfoque",
-                text: "Imagen premium, claridad y soporte tecnico"
+                icon: Facebook,
+                title: "Facebook",
+                text: "BGB",
+                href: "https://www.facebook.com/share/1J1fSwaR5V/"
               }
             ].map((item) => {
               const Icon = item.icon;
@@ -129,7 +130,7 @@ export default function Contact() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-white/50">Formulario rapido</p>
-              <h3 className="mt-2 text-2xl font-bold">Pide tu propuesta</h3>
+              <h3 className="mt-2 font-display text-2xl font-bold">Pide tu propuesta</h3>
             </div>
             <button
               type="button"
