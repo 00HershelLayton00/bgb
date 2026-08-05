@@ -15,26 +15,28 @@ function openChatbot() {
 
 export default function Navbar() {
   return (
-    <motion.header
-      initial={{ y: -24, opacity: 0 }}
+    <motion.nav
+      initial={{ y: 40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.55 }}
-      className="fixed inset-x-0 top-0 z-40 px-4 pt-4 sm:px-6 lg:px-8"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#07090e]/85 backdrop-blur-xl"
     >
-      <div className="glass mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-3xl px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
-        <a href="#" className="flex items-center gap-2.5 sm:gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0066FF] text-base font-black shadow-[0_0_30px_rgba(0,102,255,0.32)] sm:h-11 sm:w-11 sm:text-lg">
+      <div className="mx-auto flex max-w-7xl flex-nowrap items-center justify-between gap-2 px-3 py-2 sm:gap-4 sm:px-5 sm:py-2.5">
+        <a href="#" className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0066FF] text-xs font-black text-white sm:h-9 sm:w-9 sm:text-sm">
             BGB
           </div>
-          <p className="font-display text-xs font-semibold tracking-[0.3em] text-white/100 sm:text-sm sm:tracking-[0.35em]">BGB TECH</p>
+          <span className="hidden font-display text-xs font-semibold tracking-[0.25em] text-white/100 min-[440px]:inline sm:text-sm">
+            BGB TECH
+          </span>
         </a>
 
-        <nav className="flex flex-wrap items-center gap-3 text-sm text-white/100">
+        <nav className="flex flex-nowrap items-center gap-0.5 sm:gap-2">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="rounded-full px-4 py-2 transition hover:bg-white/10 hover:text-white"
+              className="whitespace-nowrap rounded-full px-2 py-1.5 text-[11px] text-white/80 transition hover:bg-white/10 hover:text-white sm:px-3.5 sm:text-sm"
             >
               {link.label}
             </a>
@@ -44,13 +46,13 @@ export default function Navbar() {
         <button
           type="button"
           onClick={openChatbot}
-          className="inline-flex items-center gap-2 rounded-full bg-[#0066FF] px-4 py-2 text-xs font-semibold text-white shadow-[0_0_25px_rgba(0,102,255,0.3)] transition hover:scale-[1.02] hover:bg-[#0a73ff] sm:px-5 sm:py-2.5 sm:text-sm"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#0066FF] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#0a73ff] sm:px-4 sm:py-2 sm:text-xs"
         >
-          <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          Hablar ahora
-          <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <Sparkles className="h-3.5 w-3.5" />
+          <span className="hidden min-[380px]:inline">Hablar</span> ahora
+          <ArrowRight className="hidden h-3.5 w-3.5 sm:inline" />
         </button>
       </div>
-    </motion.header>
+    </motion.nav>
   );
 }

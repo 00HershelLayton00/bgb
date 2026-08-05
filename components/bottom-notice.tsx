@@ -41,7 +41,7 @@ export default function BottomNotice() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.4 }}
-          className="fixed bottom-4 left-1/2 z-30 w-[min(92vw,32rem)] -translate-x-1/2 rounded-2xl border border-white/10 bg-black/45 px-4 py-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-xl"
+          className="fixed bottom-16 left-1/2 z-30 w-[min(92vw,32rem)] -translate-x-1/2 rounded-2xl border border-white/10 bg-black/45 px-4 py-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-xl"
         >
           <button
             type="button"

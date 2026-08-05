@@ -181,7 +181,7 @@ export default function Chatbot() {
         onClick={() => setOpen((value) => !value)}
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.98 }}
-        className="fixed right-4 bottom-24 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#0066FF] text-white shadow-[0_0_30px_rgba(0,102,255,0.3)] sm:right-6 sm:bottom-28"
+        className="fixed right-4 bottom-28 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#0066FF] text-white shadow-[0_0_30px_rgba(0,102,255,0.3)] sm:right-6 sm:bottom-28"
         aria-label="Abrir chatbot"
       >
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/20">
@@ -196,7 +196,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ duration: 0.24 }}
-            className="fixed right-4 bottom-40 z-50 w-[min(92vw,25rem)] overflow-hidden rounded-[1.9rem] border border-white/10 bg-[#07090e]/94 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:right-6 sm:bottom-44"
+            className="fixed right-4 bottom-56 z-50 w-[min(92vw,25rem)] overflow-hidden rounded-[1.9rem] border border-white/10 bg-[#07090e]/94 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:right-6 sm:bottom-56"
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
               <div className="flex items-center gap-3">

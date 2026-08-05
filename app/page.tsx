@@ -1,13 +1,17 @@
 import Navbar from "@/components/navbar";
 import Hero from "@/components/hero";
-import Services from "@/components/services";
 import Team from "@/components/team";
+import Services from "@/components/services";
 import Contact from "@/components/contact";
+import Stats from "@/components/stats";
 import BottomNotice from "@/components/bottom-notice";
 import Chatbot from "@/components/chatbot";
 import ParticleBackground from "@/components/particle-background";
+import { listTeamPhotos } from "@/lib/photos";
 
 export default function Page() {
+  const teamPhotos = listTeamPhotos();
+
   return (
     <div className="relative min-h-screen overflow-hidden text-white">
       <ParticleBackground />
@@ -17,10 +21,11 @@ export default function Page() {
       <div className="relative z-10">
         <Navbar />
         <main>
-          <Hero />
-          <Services />
+          <Hero teamPhotos={teamPhotos} />
           <Team />
+          <Services />
           <Contact />
+          <Stats />
         </main>
       </div>
 

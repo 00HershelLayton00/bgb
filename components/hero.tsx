@@ -2,15 +2,12 @@
 
 import { motion } from "framer-motion";
 import { ShieldCheck, Sparkles } from "lucide-react";
+import TeamCarousel from "@/components/team-carousel";
+import TeamHeading from "@/components/team-heading";
 
-const stats = [
-  { value: "100%", label: "Responsive" },
-  { value: "24/7", label: "Asistente Nova" }
-];
-
-export default function Hero() {
+export default function Hero({ teamPhotos }: { teamPhotos: string[] }) {
   return (
-    <section className="relative mx-auto flex min-h-screen max-w-7xl items-start px-4 pt-52 pb-10 sm:items-center sm:pt-44 sm:px-6 lg:px-8">
+    <section className="relative mx-auto flex min-h-screen max-w-7xl items-center px-4 pt-12 pb-16 sm:px-6 lg:px-8">
       <div className="absolute inset-x-0 top-20 -z-10 mx-auto h-72 w-72 rounded-full bg-[#0066FF] opacity-[0.12] blur-3xl" />
       <div className="grid w-full items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="max-w-3xl">
@@ -28,11 +25,11 @@ export default function Hero() {
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.06 }}
-            className="max-w-4xl font-display text-5xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl"
+            className="max-w-4xl font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl"
           >
-            Tecnología{" "}
+            BGB{" "}
             <span className="bg-gradient-to-r from-[#8fb8ff] via-[#4d8dff] to-[#0066FF] bg-clip-text text-transparent">
-              premium
+              Tecnología premium
             </span>
           </motion.h1>
 
@@ -54,22 +51,21 @@ export default function Hero() {
             Apps Android, páginas web, instalación y desarrollo de softwares de escritorio, IA para
             WhatsApp e Instagram, instalación de sistemas y soporte técnico. Una experiencia simple.
           </motion.p>
-
-          <div className="mt-12 grid gap-4 sm:grid-cols-2">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: 0.3 + index * 0.08 }}
-                className="glass rounded-3xl p-5"
-              >
-                <div className="font-display text-3xl font-bold text-white">{stat.value}</div>
-                <div className="mt-1 text-sm text-white/100">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
         </div>
+
+        {teamPhotos.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.26 }}
+            className="lg:hidden"
+          >
+            <TeamHeading />
+            <div className="mt-6">
+              <TeamCarousel photos={teamPhotos} />
+            </div>
+          </motion.div>
+        ) : null}
 
         <motion.div
           initial={{ opacity: 0, scale: 0.94, y: 20 }}

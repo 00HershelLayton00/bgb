@@ -68,7 +68,7 @@ export default function Contact() {
             Puedes escribirnos por correo, usar el chatbot o dejar tus datos en el formulario rapido.
           </p>
 
-          <div className="mt-8 grid gap-4">
+          <div className="mt-8 flex w-full snap-x flex-nowrap gap-3 overflow-x-auto overscroll-x-contain touch-pan-x pb-2 [-webkit-overflow-scrolling:touch] sm:gap-4">
             {[
               {
                 icon: Mail,
@@ -92,12 +92,14 @@ export default function Contact() {
               const Icon = item.icon;
               const content = (
                 <>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#0066FF]/20 text-[#9ec1ff]">
-                    <Icon className="h-5 w-5" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0066FF]/20 text-[#9ec1ff] transition-transform duration-150 active:scale-90 sm:h-14 sm:w-14">
+                    <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold">{item.title}</h3>
-                    <p className="mt-1 text-sm text-white/100">{item.text}</p>
+                  <div className="text-center">
+                    <h3 className="text-xs font-semibold sm:text-sm">{item.title}</h3>
+                    <p className="mt-0.5 max-w-full break-words text-[11px] leading-4 text-white/80 sm:text-sm sm:leading-6">
+                      {item.text}
+                    </p>
                   </div>
                 </>
               );
@@ -107,12 +109,15 @@ export default function Contact() {
                   href={item.href}
                   target={item.href.startsWith("http") ? "_blank" : undefined}
                   rel="noreferrer"
-                  className="glass flex items-start gap-4 rounded-[1.5rem] p-5 transition hover:border-[#0066FF]/40"
+                  className="flex w-44 shrink-0 snap-start flex-col items-center gap-2.5 rounded-3xl border border-white/10 bg-white/5 p-4 transition-transform duration-150 hover:border-[#0066FF]/40 hover:bg-white/10 active:scale-[0.97] sm:w-60 sm:p-5"
                 >
                   {content}
                 </a>
               ) : (
-                <div key={item.title} className="glass flex items-start gap-4 rounded-[1.5rem] p-5">
+                <div
+                  key={item.title}
+                  className="flex w-44 shrink-0 snap-start flex-col items-center gap-2.5 rounded-3xl border border-white/10 bg-white/5 p-4 active:scale-[0.97] sm:w-60 sm:p-5"
+                >
                   {content}
                 </div>
               );
